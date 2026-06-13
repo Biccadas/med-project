@@ -1,0 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/utilizador.dart';
+
+class UtilizadorService {
+
+  final _db = FirebaseFirestore.instance;
+
+  Stream<List<Utilizador>> todosUtilizadores() {
+    return _db
+        .collection('utilizadores')
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => Utilizador.fromMap(d.id, d.data())).toList());
+  }
+
+  Future<void> actualizarTipo(String uid, String tipo) async {
+    await _db.collection('utilizadores').doc(uid).update({'tipo': tipo});
+  }
+
+  // remover utilizador do firestore (nao remove do auth)
+  Future<void> removerUtilizador(String uid) async {
+    await _db.collection('utilizadores').doc(uid).delete();
+  }
+}
