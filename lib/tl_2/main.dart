@@ -10,6 +10,7 @@ import 'views/auth/registo_tela.dart';
 import 'views/paciente/paciente_tela.dart';
 import 'views/medico/medico_tela.dart';
 import 'views/admin/admin_tela.dart';
+import 'views/dev/design_preview.dart';
 import 'core/tema.dart';
 
 void main() async {
@@ -41,6 +42,7 @@ class MinhaApp extends StatelessWidget {
         routes: {
           '/': (context) => TelaInicial(),
           '/registo': (context) => RegistoTela(),
+          '/design': (context) => const DesignPreviewTela(), // temporário — sistema de design
         },
       ),
     );
