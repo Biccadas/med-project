@@ -620,6 +620,13 @@ class _PacienteTelaState extends State<PacienteTela> {
       MedButton(label: 'Editar Perfil', onPressed: () => abrirEditarPerfil(prov), cor: MedColors.accent),
       SizedBox(height: 12),
       MedButton(label: 'Terminar Sessão', onPressed: () => prov.logout(), cor: MedColors.danger),
+      SizedBox(height: 16),
+      // TEMPORÁRIO: remover antes de produção — acesso ao design preview
+      TextButton.icon(
+        onPressed: () => Navigator.pushNamed(context, '/design'),
+        icon: Icon(Icons.construction_rounded, size: 16, color: MedColors.textSub),
+        label: Text('Ver Design (temporário)', style: TextStyle(fontSize: 12, color: MedColors.textSub, fontWeight: FontWeight.w600)),
+      ),
     ]));
   }
 
