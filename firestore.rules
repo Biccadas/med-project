@@ -1,0 +1,142 @@
+rules_version = '2';
+
+// =============================================================================
+// MedLink — Regras de Segurança do Firestore
+// -----------------------------------------------------------------------------
+// Substituem a regra de "modo de teste" (allow read, write: if request.time < ...)
+// que deixava a base de dados aberta a qualquer pessoa.
+//
+// Papéis (campo `tipo` em utilizadores/{uid}): 'paciente' | 'medico' | 'admin'.
+// Ver notas de COMPROMISSO no fim — itens a apertar antes do piloto.
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------- Funções auxiliares ----------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isUser(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    // Lê o papel do próprio utilizador. get() dentro de regras não é sujeito às
+    // regras (leitura de confiança), mas conta como 1 leitura.
+    function role() {
+      return get(/databases/$(database)/documents/utilizadores/$(request.auth.uid)).data.tipo;
+    }
+    function isAdmin() {
+      return isSignedIn() && role() == 'admin';
+    }
+    function isMedico() {
+      return isSignedIn() && role() == 'medico';
+    }
+
+    // ---------------------- utilizadores ----------------------
+    match /utilizadores/{uid} {
+      // Necessário para listar médicos/pacientes por `tipo`. COMPROMISSO (nota 1).
+      allow read: if isSignedIn();
+
+      // Novo utilizador cria o próprio doc, mas não se pode auto-atribuir 'admin'.
+      allow create: if isUser(uid)
+                    && request.resource.data.tipo in ['paciente', 'medico'];
+
+      // O próprio edita o seu perfil, mas NÃO muda o seu `tipo` (evita escalar
+      // privilégios). O admin pode tudo, incluindo mudar tipos.
+      allow update: if isAdmin()
+                    || (isUser(uid) && request.resource.data.tipo == resource.data.tipo);
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------- consultas ----------------------
+    match /consultas/{id} {
+      allow read: if isSignedIn() && (
+                       resource.data.pacienteId == request.auth.uid
+                    || resource.data.medicoId == request.auth.uid
+                    || isAdmin()
+                  );
+      allow create: if isSignedIn() && (
+                       request.resource.data.pacienteId == request.auth.uid
+                    || isMedico()
+                    || isAdmin()
+                  );
+      allow update: if isSignedIn() && (
+                       resource.data.pacienteId == request.auth.uid
+                    || resource.data.medicoId == request.auth.uid
+                    || isAdmin()
+                  );
+      allow delete: if isAdmin()
+                    || (isMedico() && resource.data.medicoId == request.auth.uid);
+    }
+
+    // ---------------------- mensagens (chat) ----------------------
+    // chatId = "<uidA>_<uidB>" (uids ordenados). Autoriza quem está no chatId.
+    match /mensagens/{id} {
+      allow read: if isSignedIn()
+                  && request.auth.uid in resource.data.chatId.split('_');
+      allow create: if isSignedIn()
+                    && request.resource.data.remetenteId == request.auth.uid
+                    && request.auth.uid in request.resource.data.chatId.split('_');
+      allow update, delete: if false; // mensagens imutáveis no MVP
+    }
+
+    // ---------------------- avisos (notificações) ----------------------
+    match /avisos/{id} {
+      allow read: if isSignedIn() && (
+                       resource.data.destinatarioId == request.auth.uid
+                    || isAdmin()
+                  );
+      // Um aviso é criado para OUTRO utilizador (ex.: médico confirma -> avisa
+      // paciente), por isso não exigimos destinatario == criador. COMPROMISSO (nota 3).
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.destinatarioId == request.auth.uid;
+      allow delete: if isSignedIn() && (
+                       resource.data.destinatarioId == request.auth.uid
+                    || isAdmin()
+                  );
+    }
+
+    // ---------------------- disponibilidade ----------------------
+    // doc ID = medicoId. Pacientes leem para marcar; só o médico dono escreve.
+    match /disponibilidade/{medicoId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || (isUser(medicoId) && isMedico());
+    }
+
+    // ---------------------- medicamentos (prescrições) ----------------------
+    match /medicamentos/{id} {
+      allow read: if isSignedIn() && (
+                       resource.data.pacienteId == request.auth.uid
+                    || resource.data.medicoId == request.auth.uid
+                    || isAdmin()
+                  );
+      allow create: if isAdmin()
+                    || (isMedico() && request.resource.data.medicoId == request.auth.uid);
+      allow update, delete: if isSignedIn() && (
+                       resource.data.medicoId == request.auth.uid
+                    || isAdmin()
+                  );
+    }
+
+    // Qualquer coleção não listada acima é NEGADA por defeito (rules_version 2).
+  }
+}
+
+// =============================================================================
+// NOTAS DE COMPROMISSO — apertar na fase de piloto (dados reais)
+// -----------------------------------------------------------------------------
+// 1) Leitura de `utilizadores`: qualquer autenticado lê qualquer perfil (nome,
+//    email, telefone). Necessário porque a app lista médicos/pacientes por `tipo`.
+//    Fix futuro: coleção `medicos_publicos` só com nome/especialização, e restringir
+//    `utilizadores` a self + admin + médico com consulta em comum.
+//
+// 2) Registo de papel: um utilizador pode criar o seu doc como 'medico'. As regras
+//    não conseguem distinguir "admin criou via app secundária" de "auto-registo".
+//    Fix futuro: criar médicos/admins via Cloud Function (Admin SDK) e usar Custom
+//    Claims para o papel, em vez de um campo em Firestore. O primeiro admin é
+//    definido manualmente na consola.
+//
+// 3) Criação de `avisos`: qualquer autenticado pode criar um aviso para outro.
+//    Fix futuro: mover a criação de notificações para uma Cloud Function.
+// =============================================================================
