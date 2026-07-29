@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/utilizador_service.dart';
+import '../../repositories/utilizador_repository.dart';
 import '../../services/consulta_service.dart';
 import '../../services/auth_service.dart';
 import '../../models/utilizador.dart';
@@ -16,7 +16,7 @@ class AdminTela extends StatefulWidget {
 }
 
 class _AdminTelaState extends State<AdminTela> {
-  final _us = UtilizadorService();
+  late final UtilizadorRepository _us;
   final _cs = ConsultaService();
   final _auth = AuthService();
   int _tab = 0;
@@ -31,6 +31,12 @@ class _AdminTelaState extends State<AdminTela> {
   final _txtPesquisa = TextEditingController();
   DateTime? _dataInicio; DateTime? _dataFim;
   bool _kpiVisivel = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _us = context.read<UtilizadorRepository>();
+  }
 
   void _sheet(Widget Function(BuildContext, StateSetter) builder) {
     showModalBottomSheet(context: context, isScrollControlled: true, isDismissible: true, enableDrag: true, backgroundColor: Colors.transparent,
