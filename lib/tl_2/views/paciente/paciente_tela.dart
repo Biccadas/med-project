@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/consulta_service.dart';
 import '../../services/historico_service.dart';
-import '../../services/disponibilidade_service.dart';
+import '../../repositories/disponibilidade_repository.dart';
 import '../../models/consulta.dart';
 import '../../models/medicamento.dart';
 import '../../models/utilizador.dart';
@@ -19,7 +19,7 @@ class PacienteTela extends StatefulWidget {
 class _PacienteTelaState extends State<PacienteTela> {
   final _cs = ConsultaService();
   final _hs = HistoricoService();
-  final _ds = DisponibilidadeService();
+  late final DisponibilidadeRepository _ds;
   int _tab = 0;
   String _filtroEstado = 'todos';
   String _pesquisa = '';
@@ -30,6 +30,7 @@ class _PacienteTelaState extends State<PacienteTela> {
   @override
   void initState() {
     super.initState();
+    _ds = context.read<DisponibilidadeRepository>();
     _scrollInicio.addListener(() {
       final esconder = _scrollInicio.offset > 60;
       if (esconder == _kpiVisivel) setState(() { _kpiVisivel = !esconder; });

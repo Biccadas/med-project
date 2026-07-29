@@ -7,6 +7,8 @@ import '../firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'repositories/utilizador_repository.dart';
 import 'repositories/firebase/firebase_utilizador_repository.dart';
+import 'repositories/disponibilidade_repository.dart';
+import 'repositories/firebase/firebase_disponibilidade_repository.dart';
 import 'views/auth/login_tela.dart';
 import 'views/auth/registo_tela.dart';
 import 'views/paciente/paciente_tela.dart';
@@ -32,6 +34,7 @@ class MinhaApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()..carregarUtilizador()),
         Provider<UtilizadorRepository>(create: (_) => FirebaseUtilizadorRepository()),
+        Provider<DisponibilidadeRepository>(create: (_) => FirebaseDisponibilidadeRepository()),
       ],
       child: MaterialApp(
         title: 'MedLink',
