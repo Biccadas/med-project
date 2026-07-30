@@ -17,16 +17,28 @@ class DesignPreviewTela extends StatefulWidget {
 
 class _DesignPreviewTelaState extends State<DesignPreviewTela> with SingleTickerProviderStateMixin {
   late final AnimationController _entrada;
-  late final bool _reduzirMovimento;
+  bool _reduzirMovimento = false;
+  bool _entradaArrancada = false;
 
   @override
   void initState() {
     super.initState();
+    // Nada aqui depende de context — só cria o controller, sem duração ainda
+    // decidida (isso depende de MediaQuery, lido em didChangeDependencies).
+    _entrada = AnimationController(vsync: this, duration: MedMotion.slow);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // dependOnInheritedWidgetOfExactType (usado por MediaQuery.of) só pode
+    // ser chamado depois de initState() ter terminado — aqui é o sítio certo.
     _reduzirMovimento = MediaQuery.of(context).disableAnimations;
-    _entrada = AnimationController(
-      vsync: this,
-      duration: _reduzirMovimento ? Duration.zero : MedMotion.slow,
-    )..forward();
+    if (!_entradaArrancada) {
+      _entradaArrancada = true;
+      _entrada.duration = _reduzirMovimento ? Duration.zero : MedMotion.slow;
+      _entrada.forward();
+    }
   }
 
   @override
