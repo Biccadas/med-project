@@ -79,21 +79,51 @@ class _DesignPreviewTelaState extends State<DesignPreviewTela> with SingleTicker
         child: ListView(
           padding: const EdgeInsets.all(MedSpace.xl),
           children: [
-            _entradaAnimada(0, _secao('Tipografia', const _SeccaoTipografia())),
+            _cabecalho(),
             const SizedBox(height: MedSpace.xxl),
-            _entradaAnimada(1, _secao('Cor', const _SeccaoCor())),
+            _entradaAnimada(0, _secao('Cor', const _SeccaoCor())),
+            const SizedBox(height: MedSpace.xxl),
+            _entradaAnimada(1, _secao('Tipografia', const _SeccaoTipografia())),
             const SizedBox(height: MedSpace.xxl),
             _entradaAnimada(2, _secao('Botões', const _SeccaoBotoes())),
             const SizedBox(height: MedSpace.xxl),
-            _entradaAnimada(3, _secao('Cartões', const _SeccaoCartoes())),
+            _entradaAnimada(3, _secao('Campo de formulário', const _SeccaoCampo())),
             const SizedBox(height: MedSpace.xxl),
-            _entradaAnimada(4, _secao('Pills de estado', const _SeccaoPills())),
+            _entradaAnimada(4, _secao('Cartões', const _SeccaoCartoes())),
             const SizedBox(height: MedSpace.xxl),
-            _entradaAnimada(5, _secao('Campo de formulário', const _SeccaoCampo())),
+            _entradaAnimada(5, _secao('Pills de estado', const _SeccaoPills())),
             const SizedBox(height: MedSpace.xxxl),
           ],
         ),
       ),
+    );
+  }
+
+  /// Mostra o estado real de "reduzir movimento" — útil para confirmar,
+  /// ao rever este ecrã, que a regra de acessibilidade está mesmo a ser lida.
+  Widget _cabecalho() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(MedSpace.lg),
+      decoration: BoxDecoration(color: MedColors.brandSoft, borderRadius: BorderRadius.circular(MedRadius.lg)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('MedLink — tokens e componentes base', style: MedType.bodyStrong()),
+        const SizedBox(height: MedSpace.xs),
+        Text('Ecrã de desenvolvimento. Não faz parte de nenhum fluxo real.', style: MedType.caption()),
+        const SizedBox(height: MedSpace.md),
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(
+            _reduzirMovimento ? Icons.motion_photos_off_rounded : Icons.motion_photos_auto_rounded,
+            size: 16,
+            color: MedColors.textSecondary,
+          ),
+          const SizedBox(width: MedSpace.xs),
+          Text(
+            _reduzirMovimento ? 'Reduzir movimento: ativo (sem entradas animadas)' : 'Reduzir movimento: inativo',
+            style: MedType.caption(),
+          ),
+        ]),
+      ]),
     );
   }
 
@@ -145,6 +175,7 @@ class _SeccaoCor extends StatelessWidget {
       _swatch('Aviso', MedColors.warning, textoClaro: true),
       _swatch('Perigo', MedColors.danger, textoClaro: true),
       _swatch('Info (realizada)', MedColors.info, textoClaro: true),
+      _swatch('Desativado', MedColors.disabled),
     ]);
   }
 
@@ -173,36 +204,40 @@ class _SeccaoBotoes extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const _BotaoPressionavel(label: 'Marcar consulta', icon: Icons.calendar_today_rounded),
       const SizedBox(height: MedSpace.sm),
-      Text('Toque e segure para ver o estado pressionado (escala imediata, ${MedMotion.fast.inMilliseconds}ms).',
-          style: MedType.caption()),
+      Text(
+        'Toque e segure para ver o estado pressionado — a escala reage no instante do toque '
+        '(onTapDown), não à espera de largar, com ${MedMotion.fast.inMilliseconds}ms de resposta.',
+        style: MedType.caption(),
+      ),
       const SizedBox(height: MedSpace.lg),
       Row(children: [
-        Expanded(child: _estadoEstatico('Normal', pressionado: false)),
+        Expanded(child: _estadoEstatico('Normal', estado: _EstadoBotao.normal)),
         const SizedBox(width: MedSpace.md),
-        Expanded(child: _estadoEstatico('Pressionado', pressionado: true)),
+        Expanded(child: _estadoEstatico('Pressionado', estado: _EstadoBotao.pressionado)),
+        const SizedBox(width: MedSpace.md),
+        Expanded(child: _estadoEstatico('Desativado', estado: _EstadoBotao.desativado)),
       ]),
     ]);
   }
 
-  Widget _estadoEstatico(String label, {required bool pressionado}) {
+  Widget _estadoEstatico(String label, {required _EstadoBotao estado}) {
+    final pressionado = estado == _EstadoBotao.pressionado;
+    final desativado = estado == _EstadoBotao.desativado;
+    final corFundo = desativado ? MedColors.disabled : (pressionado ? MedColors.brandPressed : MedColors.brand);
+    final corTexto = desativado ? MedColors.onDisabled : Colors.white;
     return Transform.scale(
       scale: pressionado ? 0.97 : 1.0,
       child: Container(
         height: MedSpace.minTouchTarget + 6,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: pressionado ? MedColors.brandPressed : MedColors.brand,
-          borderRadius: BorderRadius.circular(MedRadius.md),
-        ),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.touch_app_rounded, color: Colors.white, size: 18),
-          const SizedBox(width: MedSpace.sm),
-          Text(label, style: MedType.bodyStrong(color: Colors.white)),
-        ]),
+        decoration: BoxDecoration(color: corFundo, borderRadius: BorderRadius.circular(MedRadius.md)),
+        child: Text(label, style: MedType.bodyStrong(color: corTexto)),
       ),
     );
   }
 }
+
+enum _EstadoBotao { normal, pressionado, desativado }
 
 /// Botão real e interativo: escala para 0.97 no instante do toque
 /// (`onTapDown`, não `onTap`) — feedback imediato, não à espera do largar.
@@ -314,22 +349,47 @@ class _SeccaoCampo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: MedColors.surface,
-        borderRadius: BorderRadius.circular(MedRadius.md),
-        border: Border.all(color: MedColors.border, width: 1.5),
-      ),
-      child: TextField(
-        style: MedType.body(),
-        decoration: InputDecoration(
-          hintText: 'Motivo da consulta',
-          hintStyle: MedType.body(color: MedColors.textHint),
-          prefixIcon: const Icon(Icons.edit_note_rounded, color: MedColors.textHint),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: MedSpace.lg, vertical: MedSpace.lg),
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+        decoration: BoxDecoration(
+          color: MedColors.surface,
+          borderRadius: BorderRadius.circular(MedRadius.md),
+          border: Border.all(color: MedColors.border, width: 1.5),
+        ),
+        child: TextField(
+          style: MedType.body(),
+          decoration: InputDecoration(
+            hintText: 'Motivo da consulta',
+            hintStyle: MedType.body(color: MedColors.textHint),
+            prefixIcon: const Icon(Icons.edit_note_rounded, color: MedColors.textHint),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(horizontal: MedSpace.lg, vertical: MedSpace.lg),
+          ),
         ),
       ),
-    );
+      const SizedBox(height: MedSpace.md),
+      Container(
+        decoration: BoxDecoration(
+          color: MedColors.surface,
+          borderRadius: BorderRadius.circular(MedRadius.md),
+          border: Border.all(color: MedColors.danger, width: 1.5),
+        ),
+        child: TextField(
+          style: MedType.body(),
+          decoration: InputDecoration(
+            hintText: 'Número de telefone',
+            hintStyle: MedType.body(color: MedColors.textHint),
+            prefixIcon: const Icon(Icons.phone_rounded, color: MedColors.danger),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(horizontal: MedSpace.lg, vertical: MedSpace.lg),
+          ),
+        ),
+      ),
+      const SizedBox(height: MedSpace.xs),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: MedSpace.xs),
+        child: Text('Estado de erro — número inválido.', style: MedType.caption(color: MedColors.danger)),
+      ),
+    ]);
   }
 }

@@ -26,6 +26,11 @@ class MedMotion {
 
   static const curve = Curves.easeOutCubic;
 
+  /// Desfasamento entre entradas de uma lista/grupo (stagger) — dentro da
+  /// janela de 30-80ms recomendada para entradas em grupo (ocasionais,
+  /// nunca em ecrãs de alta frequência de uso).
+  static const stagger = Duration(milliseconds: 60);
+
   /// Devolve [base] respeitando "reduzir movimento": Duration.zero quando
   /// o utilizador pediu menos animação ao sistema operativo.
   static Duration duration(BuildContext context, [Duration base = MedMotion.base]) {

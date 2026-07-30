@@ -41,6 +41,12 @@ class MedColors {
   // Estado de consulta "realizada" — indicador, não cor de marca/ação.
   static const info = Color(0xFF3730A3);
   static const infoSoft = Color(0xFFEEF0FD);
+
+  // Desativado — neutro, sem convite à ação. Controlos desativados estão
+  // isentos do mínimo de contraste AA (não são texto nem ação disponível),
+  // mas mantemos legibilidade razoável em vez de apagar por completo.
+  static const disabled = Color(0xFFC7CBD1);
+  static const onDisabled = Color(0xFF8A93A1);
 }
 
 enum EstadoConsulta { pendente, confirmada, realizada, cancelada }
