@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/consulta.dart';
-import '../models/utilizador.dart';
-import '../models/aviso.dart';
-import '../core/tema.dart';
+import '../../models/consulta.dart';
+import '../../models/utilizador.dart';
+import '../../models/aviso.dart';
+import '../consulta_repository.dart';
 
-class ConsultaService implements ConsultaServiceInterface {
+class FirebaseConsultaRepository implements ConsultaRepository {
   final _db = FirebaseFirestore.instance;
 
+  @override
   Future<String?> marcarConsulta(Consulta c) async {
     try {
       var doc = await _db.collection('consultas').add(c.toMap());
@@ -21,6 +22,7 @@ class ConsultaService implements ConsultaServiceInterface {
     } catch (e) { return e.toString(); }
   }
 
+  @override
   Stream<List<Consulta>> consultasActivasPaciente(String uid) {
     return _db.collection('consultas')
         .where('pacienteId', isEqualTo: uid)
@@ -29,6 +31,7 @@ class ConsultaService implements ConsultaServiceInterface {
         .map((s) => s.docs.map((d) => Consulta.fromMap(d.id, d.data())).toList());
   }
 
+  @override
   Stream<List<Consulta>> historicoPaciente(String uid) {
     return _db.collection('consultas')
         .where('pacienteId', isEqualTo: uid)
@@ -37,6 +40,7 @@ class ConsultaService implements ConsultaServiceInterface {
         .map((s) => s.docs.map((d) => Consulta.fromMap(d.id, d.data())).toList());
   }
 
+  @override
   Stream<List<Consulta>> consultasActivasMedico(String uid) {
     return _db.collection('consultas')
         .where('medicoId', isEqualTo: uid)
@@ -45,6 +49,7 @@ class ConsultaService implements ConsultaServiceInterface {
         .map((s) => s.docs.map((d) => Consulta.fromMap(d.id, d.data())).toList());
   }
 
+  @override
   Stream<List<Consulta>> historicoMedico(String uid) {
     return _db.collection('consultas')
         .where('medicoId', isEqualTo: uid)
@@ -53,11 +58,13 @@ class ConsultaService implements ConsultaServiceInterface {
         .map((s) => s.docs.map((d) => Consulta.fromMap(d.id, d.data())).toList());
   }
 
+  @override
   Stream<List<Consulta>> todasConsultas() {
     return _db.collection('consultas').snapshots()
         .map((s) => s.docs.map((d) => Consulta.fromMap(d.id, d.data())).toList());
   }
 
+  @override
   Future<void> actualizarEstado(String id, String estado, {String pacienteId = '', String medicoId = '', String pacienteNome = '', String medicoNome = '', String data = '', String hora = ''}) async {
     await _db.collection('consultas').doc(id).update({'estado': estado});
 
@@ -83,16 +90,19 @@ class ConsultaService implements ConsultaServiceInterface {
     await _db.collection('avisos').add(a.toMap());
   }
 
+  @override
   Future<void> criarAvisoExame(String pacienteId, String consultaId, String detalhe) async {
     await _criarAviso(Aviso(id: '', destinatarioId: pacienteId, titulo: 'Resultado de exame disponível', corpo: detalhe, tipo: 'exame', consultaId: consultaId, criadoEm: DateTime.now().toIso8601String()));
   }
 
-  Future<void> guardarDetalheConsulta(String id, String diag, String obs, List<String> exames, List<String> resultados) async {
+  @override
+  Future<void> guardarDetalheConsulta(String id, String diag, String obs, List<String> exames, List<String> resultadosExames) async {
     await _db.collection('consultas').doc(id).update({
-      'diagnostico': diag, 'observacoes': obs, 'exames': exames, 'resultadosExames': resultados,
+      'diagnostico': diag, 'observacoes': obs, 'exames': exames, 'resultadosExames': resultadosExames,
     });
   }
 
+  @override
   Future<void> actualizarPagamento(String id, String estado, double valor, String metodo, {String seguradoraCodigo = ''}) async {
     await _db.collection('consultas').doc(id).update({
       'pagamentoEstado': estado, 'pagamentoValor': valor, 'pagamentoMetodo': metodo,
@@ -100,24 +110,29 @@ class ConsultaService implements ConsultaServiceInterface {
     });
   }
 
+  @override
   Future<void> editarConsulta(String id, String data, String hora, String motivo) async {
     await _db.collection('consultas').doc(id).update({'data': data, 'hora': hora, 'motivo': motivo});
   }
 
+  @override
   Future<void> eliminarConsulta(String id) async {
     await _db.collection('consultas').doc(id).delete();
   }
 
+  @override
   Future<List<Utilizador>> buscarMedicos() async {
     var snap = await _db.collection('utilizadores').where('tipo', isEqualTo: 'medico').get();
     return snap.docs.map((d) => Utilizador.fromMap(d.id, d.data())).toList();
   }
 
+  @override
   Future<List<Utilizador>> buscarPacientes() async {
     var snap = await _db.collection('utilizadores').where('tipo', isEqualTo: 'paciente').get();
     return snap.docs.map((d) => Utilizador.fromMap(d.id, d.data())).toList();
   }
 
+  @override
   Future<List<Utilizador>> buscarPacientesDoMedico(String medicoId) async {
     var snap = await _db.collection('consultas').where('medicoId', isEqualTo: medicoId).get();
     List<String> ids = [];
@@ -133,6 +148,7 @@ class ConsultaService implements ConsultaServiceInterface {
     return lista;
   }
 
+  @override
   Future<List<Consulta>> consultasConfirmadasPaciente(String pacienteId) async {
     var snap = await _db.collection('consultas')
         .where('pacienteId', isEqualTo: pacienteId)
@@ -140,6 +156,7 @@ class ConsultaService implements ConsultaServiceInterface {
     return snap.docs.map((d) => Consulta.fromMap(d.id, d.data())).toList();
   }
 
+  @override
   Stream<List<Aviso>> avisosNaoLidos(String uid) {
     return _db.collection('avisos')
         .where('destinatarioId', isEqualTo: uid)
@@ -148,6 +165,7 @@ class ConsultaService implements ConsultaServiceInterface {
         .map((s) => s.docs.map((d) => Aviso.fromMap(d.id, d.data())).toList());
   }
 
+  @override
   Stream<List<Aviso>> todosAvisos(String uid) {
     return _db.collection('avisos')
         .where('destinatarioId', isEqualTo: uid)
@@ -159,10 +177,12 @@ class ConsultaService implements ConsultaServiceInterface {
     });
   }
 
+  @override
   Future<void> marcarAvisoLido(String id) async {
     await _db.collection('avisos').doc(id).update({'lido': true});
   }
 
+  @override
   Future<void> marcarTodosLidos(String uid) async {
     var snap = await _db.collection('avisos').where('destinatarioId', isEqualTo: uid).where('lido', isEqualTo: false).get();
     for (var d in snap.docs) { await d.reference.update({'lido': true}); }

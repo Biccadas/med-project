@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../repositories/utilizador_repository.dart';
-import '../../services/consulta_service.dart';
+import '../../repositories/consulta_repository.dart';
 import '../../services/auth_service.dart';
 import '../../models/utilizador.dart';
 import '../../models/consulta.dart';
@@ -17,7 +17,7 @@ class AdminTela extends StatefulWidget {
 
 class _AdminTelaState extends State<AdminTela> {
   late final UtilizadorRepository _us;
-  final _cs = ConsultaService();
+  late final ConsultaRepository _cs;
   final _auth = AuthService();
   int _tab = 0;
 
@@ -36,6 +36,7 @@ class _AdminTelaState extends State<AdminTela> {
   void initState() {
     super.initState();
     _us = context.read<UtilizadorRepository>();
+    _cs = context.read<ConsultaRepository>();
   }
 
   void _sheet(Widget Function(BuildContext, StateSetter) builder) {

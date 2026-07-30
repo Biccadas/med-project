@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/consulta_service.dart';
 import '../../services/historico_service.dart';
+import '../../repositories/consulta_repository.dart';
 import '../../repositories/disponibilidade_repository.dart';
 import '../../models/consulta.dart';
 import '../../models/medicamento.dart';
@@ -18,7 +18,7 @@ class MedicoTela extends StatefulWidget {
 }
 
 class _MedicoTelaState extends State<MedicoTela> {
-  final _cs = ConsultaService();
+  late final ConsultaRepository _cs;
   final _hs = HistoricoService();
   late final DisponibilidadeRepository _ds;
   int _tab = 0;
@@ -31,6 +31,7 @@ class _MedicoTelaState extends State<MedicoTela> {
   @override
   void initState() {
     super.initState();
+    _cs = context.read<ConsultaRepository>();
     _ds = context.read<DisponibilidadeRepository>();
     _scrollInicio.addListener(() {
       final esconder = _scrollInicio.offset > 60;

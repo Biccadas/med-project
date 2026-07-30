@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/aviso.dart';
+import '../repositories/consulta_repository.dart';
 
 class MedColors {
   static const bg = Color(0xFFF8F9FC);
@@ -305,7 +306,7 @@ class AvisosBadge extends StatelessWidget {
   }
 }
 
-void mostrarAvisos(BuildContext context, Stream<List<Aviso>> stream, ConsultaServiceInterface service, String uid, {Function(Aviso)? onTapAviso}) {
+void mostrarAvisos(BuildContext context, Stream<List<Aviso>> stream, ConsultaRepository service, String uid, {Function(Aviso)? onTapAviso}) {
   showModalBottomSheet(
     context: context, isScrollControlled: true, isDismissible: true, enableDrag: true, backgroundColor: Colors.transparent,
     builder: (ctx) => Container(
@@ -385,9 +386,4 @@ IconData _iconAviso(String tipo) {
   if (tipo == 'consulta_realizada') return Icons.task_alt_rounded;
   if (tipo == 'mensagem') return Icons.chat_bubble_outline_rounded;
   return Icons.notifications_outlined;
-}
-
-abstract class ConsultaServiceInterface {
-  Future<void> marcarAvisoLido(String id);
-  Future<void> marcarTodosLidos(String uid);
 }
