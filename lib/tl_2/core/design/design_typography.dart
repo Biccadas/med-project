@@ -6,6 +6,10 @@ import 'design_tokens.dart';
 /// muito legível; escolhida para um público que pode ter baixa literacia
 /// digital — nada de fontes decorativas/condensadas).
 ///
+/// Títulos grandes e LEVES (peso 300-400) — hierarquia por tamanho e
+/// espaço, não por peso pesado nem por cor. Texto secundário fino e
+/// cinzento (`textSecondary`).
+///
 /// Tracking negativo em texto grande, perto de zero em texto de leitura
 /// (regra do apple-design: "large text wants negative tracking; small text
 /// wants slightly positive/near-zero for legibility").
@@ -27,29 +31,29 @@ class MedType {
         color: color,
       );
 
-  /// Título de ecrã grande (ex. cabeçalho "Administração").
+  /// Título de ecrã grande (ex. cabeçalho "Administração") — leve, nunca pesado.
   static TextStyle display({Color color = MedColors.textPrimary}) =>
-      _base(size: 28, weight: FontWeight.w800, height: 34 / 28, tracking: -0.5, color: color);
+      _base(size: 28, weight: FontWeight.w300, height: 34 / 28, tracking: -0.5, color: color);
 
-  /// Título de secção.
+  /// Título de secção — leve.
   static TextStyle title({Color color = MedColors.textPrimary}) =>
-      _base(size: 22, weight: FontWeight.w800, height: 28 / 22, tracking: -0.3, color: color);
+      _base(size: 22, weight: FontWeight.w400, height: 28 / 22, tracking: -0.3, color: color);
 
   /// Subtítulo / cabeçalho de cartão.
   static TextStyle subtitle({Color color = MedColors.textPrimary}) =>
-      _base(size: 17, weight: FontWeight.w700, height: 24 / 17, tracking: -0.1, color: color);
+      _base(size: 17, weight: FontWeight.w500, height: 24 / 17, tracking: -0.1, color: color);
 
   /// Corpo de texto principal.
   static TextStyle body({Color color = MedColors.textPrimary}) =>
-      _base(size: 15, weight: FontWeight.w500, height: 22 / 15, tracking: 0, color: color);
+      _base(size: 15, weight: FontWeight.w400, height: 22 / 15, tracking: 0, color: color);
 
   /// Corpo de texto em destaque (ex. valor importante, botão).
   static TextStyle bodyStrong({Color color = MedColors.textPrimary}) =>
-      _base(size: 15, weight: FontWeight.w700, height: 22 / 15, tracking: 0, color: color);
+      _base(size: 15, weight: FontWeight.w600, height: 22 / 15, tracking: 0, color: color);
 
-  /// Texto de apoio / legendas.
+  /// Texto de apoio / legendas — fino e cinzento.
   static TextStyle caption({Color color = MedColors.textSecondary}) =>
-      _base(size: 13, weight: FontWeight.w500, height: 18 / 13, tracking: 0.1, color: color);
+      _base(size: 13, weight: FontWeight.w400, height: 18 / 13, tracking: 0.1, color: color);
 
   /// Etiqueta pequena (pills, eyebrow) — maiúsculas, usar com moderação.
   static TextStyle label({Color color = MedColors.textSecondary}) =>

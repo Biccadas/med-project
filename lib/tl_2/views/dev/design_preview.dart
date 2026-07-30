@@ -91,7 +91,9 @@ class _DesignPreviewTelaState extends State<DesignPreviewTela> with SingleTicker
             const SizedBox(height: MedSpace.xxl),
             _entradaAnimada(4, _secao('Cartões', const _SeccaoCartoes())),
             const SizedBox(height: MedSpace.xxl),
-            _entradaAnimada(5, _secao('Pills de estado', const _SeccaoPills())),
+            _entradaAnimada(5, _secao('Avatar de iniciais', const _SeccaoAvatar())),
+            const SizedBox(height: MedSpace.xxl),
+            _entradaAnimada(6, _secao('Pills de estado', const _SeccaoPills())),
             const SizedBox(height: MedSpace.xxxl),
           ],
         ),
@@ -165,21 +167,23 @@ class _SeccaoCor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(spacing: MedSpace.md, runSpacing: MedSpace.md, children: [
-      _swatch('Marca', MedColors.brand, textoClaro: true),
-      _swatch('Marca (pressionado)', MedColors.brandPressed, textoClaro: true),
+      // Marca: verde vivo — texto quase-preto (onBrand) em cima, não branco;
+      // dá muito mais contraste sobre um verde claro e vibrante.
+      _swatch('Marca', MedColors.brand, corTexto: MedColors.onBrand),
+      _swatch('Marca (pressionado)', MedColors.brandPressed, corTexto: MedColors.onBrand),
       _swatch('Superfície', MedColors.surface),
       _swatch('Fundo', MedColors.bg),
-      _swatch('Texto principal', MedColors.textPrimary, textoClaro: true),
-      _swatch('Texto secundário', MedColors.textSecondary, textoClaro: true),
-      _swatch('Sucesso', MedColors.success, textoClaro: true),
-      _swatch('Aviso', MedColors.warning, textoClaro: true),
-      _swatch('Perigo', MedColors.danger, textoClaro: true),
-      _swatch('Info (realizada)', MedColors.info, textoClaro: true),
+      _swatch('Texto principal', MedColors.textPrimary, corTexto: Colors.white),
+      _swatch('Texto secundário', MedColors.textSecondary, corTexto: Colors.white),
+      _swatch('Sucesso', MedColors.success, corTexto: Colors.white),
+      _swatch('Aviso', MedColors.warning, corTexto: Colors.white),
+      _swatch('Perigo', MedColors.danger, corTexto: Colors.white),
+      _swatch('Info (realizada)', MedColors.info, corTexto: Colors.white),
       _swatch('Desativado', MedColors.disabled),
     ]);
   }
 
-  Widget _swatch(String nome, Color cor, {bool textoClaro = false}) {
+  Widget _swatch(String nome, Color cor, {Color corTexto = MedColors.textPrimary}) {
     return Container(
       width: 132,
       height: 84,
@@ -190,8 +194,7 @@ class _SeccaoCor extends StatelessWidget {
         border: Border.all(color: MedColors.border),
       ),
       alignment: Alignment.bottomLeft,
-      child: Text(nome,
-          style: MedType.caption(color: textoClaro ? Colors.white : MedColors.textPrimary)),
+      child: Text(nome, style: MedType.caption(color: corTexto)),
     );
   }
 }
@@ -224,7 +227,7 @@ class _SeccaoBotoes extends StatelessWidget {
     final pressionado = estado == _EstadoBotao.pressionado;
     final desativado = estado == _EstadoBotao.desativado;
     final corFundo = desativado ? MedColors.disabled : (pressionado ? MedColors.brandPressed : MedColors.brand);
-    final corTexto = desativado ? MedColors.onDisabled : Colors.white;
+    final corTexto = desativado ? MedColors.onDisabled : MedColors.onBrand;
     return Transform.scale(
       scale: pressionado ? 0.97 : 1.0,
       child: Container(
@@ -274,9 +277,9 @@ class _BotaoPressionavelState extends State<_BotaoPressionavel> {
             borderRadius: BorderRadius.circular(MedRadius.md),
           ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
-            Icon(widget.icon, color: Colors.white, size: 18),
+            Icon(widget.icon, color: MedColors.onBrand, size: 18),
             const SizedBox(width: MedSpace.sm),
-            Text(widget.label, style: MedType.bodyStrong(color: Colors.white)),
+            Text(widget.label, style: MedType.bodyStrong(color: MedColors.onBrand)),
           ]),
         ),
       ),
@@ -323,6 +326,29 @@ class _SeccaoCartoes extends StatelessWidget {
           const SizedBox(width: MedSpace.md),
           Expanded(child: Text('João Matsinhe · próxima consulta em 3 dias', style: MedType.body())),
         ]),
+      ),
+    ]);
+  }
+}
+
+/// Avatar de iniciais como elemento visual por defeito — uma foto (quando
+/// existir) é sempre um bónus opcional por cima disto, nunca uma dependência.
+class _SeccaoAvatar extends StatelessWidget {
+  const _SeccaoAvatar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(children: [
+      const MedAvatarIniciais(nome: 'João Matsinhe'),
+      const SizedBox(width: MedSpace.lg),
+      const MedAvatarIniciais(nome: 'Amélia Cossa', tamanho: 64),
+      const SizedBox(width: MedSpace.lg),
+      Expanded(
+        child: Text(
+          'Sem foto por defeito — nunca vazio nem quebrado. Uma fotografia real, '
+          'quando existir, é carregada por cima deste avatar (lazy + cache).',
+          style: MedType.caption(),
+        ),
       ),
     ]);
   }

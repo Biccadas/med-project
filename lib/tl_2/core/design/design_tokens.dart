@@ -2,22 +2,31 @@ import 'package:flutter/material.dart';
 
 /// Sistema de design central do MedLink.
 ///
-/// Uma só cor de marca (`brand`), usada com disciplina na ação principal.
-/// Os papéis (paciente/médico/admin) NÃO repintam a app — diferenciam-se por
+/// Uma só cor de marca (`brand`) — verde vivo e gráfico, usada com muita
+/// disciplina na ação principal, estado ativo e destaque ocasional. Os
+/// papéis (paciente/médico/admin) NÃO repintam a app — diferenciam-se por
 /// [MedRoleTag], uma etiqueta pequena com ícone + texto.
 ///
+/// Como `brand` é claro e vibrante, o texto/ícone por cima usa `onBrand`
+/// (quase-preto), não branco — dá muito mais contraste sobre um verde vivo
+/// do que branco daria.
+///
 /// Contraste verificado (fórmula WCAG, luminância relativa sRGB):
-/// - `brand` (branco por cima): 6.7:1
+/// - `brand` com `onBrand` por cima: 6.7:1
+/// - `brandPressed` com `onBrand` por cima: 4.7:1
 /// - `textPrimary` sobre `surface`: 17.9:1
 /// - `textSecondary` sobre `surface`: 7.8:1
+/// - `success` sobre `successSoft`: 5.2:1
 /// Todos acima do mínimo AA (4.5:1) para texto normal.
 class MedColors {
   MedColors._();
 
-  // Marca — única cor de ação principal.
-  static const brand = Color(0xFF1D4ED8);
-  static const brandPressed = Color(0xFF1640B0);
-  static const brandSoft = Color(0xFFE9EFFD);
+  // Marca — verde vivo e gráfico (esmeralda/relva), única cor de ação
+  // principal. Nunca abafado/apagado; o resto do ecrã fica neutro para que,
+  // quando aparece, tenha presença.
+  static const brand = Color(0xFF22C55E);
+  static const brandPressed = Color(0xFF16A34A);
+  static const brandSoft = Color(0xFFE7F8ED);
 
   // Superfícies e fundo.
   static const bg = Color(0xFFF5F6F8);
@@ -28,11 +37,15 @@ class MedColors {
   static const textPrimary = Color(0xFF12181F);
   static const textSecondary = Color(0xFF495364);
   static const textHint = Color(0xFF6B7686);
-  static const onBrand = Color(0xFFFFFFFF);
 
-  // Estados semânticos (texto escuro sobre fundo muito claro = contraste alto por construção).
-  static const success = Color(0xFF0F7A56);
-  static const successSoft = Color(0xFFE7F9F1);
+  // Quase-preto (não branco) por cima de `brand`/`brandPressed` — ver nota
+  // de contraste acima.
+  static const onBrand = Color(0xFF0E2A1A);
+
+  // Estados semânticos — dessaturados e numa família de cor própria
+  // (teal, não verde) para nunca competir visualmente com `brand`.
+  static const success = Color(0xFF0F766E);
+  static const successSoft = Color(0xFFE7F5F3);
   static const warning = Color(0xFF92600A);
   static const warningSoft = Color(0xFFFFF6E5);
   static const danger = Color(0xFFB42318);
@@ -86,17 +99,20 @@ class MedRadius {
   MedRadius._();
   static const sm = 10.0;
   static const md = 14.0;
-  static const lg = 20.0;
+
+  /// Cartões grandes e arejados — cantos bem redondos.
+  static const lg = 22.0;
   static const pill = 999.0;
 }
 
+/// Elevação sempre subtil e difusa — nunca uma sombra dura/definida.
 class MedShadow {
   MedShadow._();
   static const card = [
-    BoxShadow(color: Color(0x0A0F1A2E), blurRadius: 10, offset: Offset(0, 4)),
+    BoxShadow(color: Color(0x0A0F1A2E), blurRadius: 24, offset: Offset(0, 8)),
   ];
   static const elevated = [
-    BoxShadow(color: Color(0x140F1A2E), blurRadius: 24, offset: Offset(0, 10)),
+    BoxShadow(color: Color(0x120F1A2E), blurRadius: 40, offset: Offset(0, 16)),
   ];
 }
 
@@ -138,6 +154,37 @@ class MedRoleTag extends StatelessWidget {
         const SizedBox(width: MedSpace.xs),
         Text(info.label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: MedColors.textSecondary)),
       ]),
+    );
+  }
+}
+
+/// Avatar de iniciais — elemento visual POR DEFEITO em toda a app; uma foto
+/// (quando existir) é sempre um bónus opcional por cima disto, nunca uma
+/// dependência (ver PRODUCT.md, secção "Imagens").
+class MedAvatarIniciais extends StatelessWidget {
+  final String nome;
+  final double tamanho;
+  const MedAvatarIniciais({super.key, required this.nome, this.tamanho = 48});
+
+  String get _iniciais {
+    final partes = nome.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (partes.isEmpty) return '?';
+    final primeira = partes.first[0];
+    final ultima = partes.length > 1 ? partes.last[0] : '';
+    return (primeira + ultima).toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: tamanho,
+      height: tamanho,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(color: MedColors.brandSoft, shape: BoxShape.circle),
+      child: Text(
+        _iniciais,
+        style: TextStyle(fontSize: tamanho * 0.36, fontWeight: FontWeight.w700, color: MedColors.brandPressed),
+      ),
     );
   }
 }
