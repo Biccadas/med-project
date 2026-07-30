@@ -46,3 +46,8 @@ app.*.map.json
 
 # Backups e ficheiros comprimidos
 *.zip
+
+# Ferramentas de skills (ambiente local, nao fazem parte do produto)
+.claude/
+.agents/
+skills-lock.json
